@@ -5,15 +5,15 @@ import java.util.Iterator;
 /**
  * Class Room - a room in an adventure game.
  *
- * This class is part of the "World of Zuul" application. 
- * "World of Zuul" is a very simple, text based adventure game.  
+ * This class is part of the "World of Strange Events" application. 
+ * "World of Strange Events" is a very simple, text based adventure game.  
  *
  * A "Room" represents one location in the scenery of the game.  It is 
  * connected to other rooms via exits.  For each existing exit, the room 
  * stores a reference to the neighboring room.
  * 
- * @author  Michael Kölling and David J. Barnes
- * @version 2016.02.29
+ * @author  Craig Hussey
+ * @version 2020.10.24
  */
 
 public class Room 
@@ -60,7 +60,7 @@ public class Room
      */
     public String getLongDescription()
     {
-        return "You are " + description + ".\n" + getExitString();
+        return "You are currently at: " + description + ".\n" + getExitString();
     }
 
     /**
@@ -68,7 +68,7 @@ public class Room
      * "Exits: north west".
      * @return Details of the room's exits.
      */
-    private String getExitString()
+    public String getExitString()
     {
         String returnString = "Exits:";
         Set<String> keys = exits.keySet();

@@ -1,6 +1,6 @@
 /**
- *  This class is the main class of the "World of Zuul" application. 
- *  "World of Zuul" is a very simple, text based adventure game.  Users 
+ *  This class is the main class of the "World of Strange Events" application. 
+ *  "World of Strange Events" is a very simple, text based adventure game.  Users 
  *  can walk around some scenery. That's all. It should really be extended 
  *  to make it more interesting!
  * 
@@ -11,9 +11,9 @@
  *  rooms, creates the parser and starts the game.  It also evaluates and
  *  executes the commands that the parser returns.
  * 
- * @author  Michael Kölling and David J. Barnes
- * @version 2016.02.29
- */
+ * @author  Craig Hussey
+ * @version 2020.10.24
+ */ 
 
 public class Game 
 {
@@ -34,30 +34,79 @@ public class Game
      */
     private void createRooms()
     {
-        Room outside, theater, pub, lab, office;
+        Room crashedPod, encampment, acidBog, foggyCliffs, plains, 
+            thornForest, deepCanyon, caveEntrance, largeRoomCave, leftCavePath, 
+                middleCavePath, rightCavePath, deepLeftCave, deepRightCave, 
+                    deepMiddleCave, artifactSite;
+            
       
         // create the rooms
-        outside = new Room("outside the main entrance of the university");
-        theater = new Room("in a lecture theater");
-        pub = new Room("in the campus pub");
-        lab = new Room("in a computing lab");
-        office = new Room("in the computing admin office");
+        crashedPod = new Room("crashed landing pod");
+        encampment = new Room("make-shift encampment");
+        acidBog = new Room("acid bog");
+        foggyCliffs = new Room("foggy cliffs");
+        plains = new Room("desert plains");
+        thornForest = new Room("thorny forest");
+        deepCanyon = new Room("deep canyon");
+        caveEntrance = new Room("cave entrance");
+        leftCavePath = new Room("left cave path");
+        middleCavePath = new Room("middle cave path");
+        rightCavePath = new Room("right cave path");
+        largeRoomCave = new Room("large room inside cave");
+        deepLeftCave = new Room("deep left cave");
+        deepRightCave = new Room("deep right cave");
+        deepMiddleCave = new Room("deep middle cave");
+        artifactSite = new Room("artifact site");
         
         // initialise room exits
-        outside.setExit("east", theater);
-        outside.setExit("south", lab);
-        outside.setExit("west", pub);
-
-        theater.setExit("west", outside);
-
-        pub.setExit("east", outside);
-
-        lab.setExit("north", outside);
-        lab.setExit("east", office);
-
-        office.setExit("west", lab);
-
-        currentRoom = outside;  // start game outside
+        crashedPod.setExit("north", encampment);
+        encampment.setExit("south", crashedPod);
+        encampment.setExit("west", acidBog);
+        encampment.setExit("east", foggyCliffs);
+        encampment.setExit("north", plains);
+        
+        acidBog.setExit("north", thornForest);
+        acidBog.setExit("east", encampment);
+        
+        foggyCliffs.setExit("north", deepCanyon);
+        foggyCliffs.setExit("west", encampment);
+        
+        thornForest.setExit("north", caveEntrance);
+        thornForest.setExit("south", acidBog);
+        
+        deepCanyon.setExit("north", caveEntrance);
+        deepCanyon.setExit("north", foggyCliffs);
+        
+        plains.setExit("north", caveEntrance);
+        plains.setExit("south", encampment);
+        
+        caveEntrance.setExit("north", largeRoomCave);
+        caveEntrance.setExit("west", thornForest);
+        caveEntrance.setExit("east", deepCanyon);
+        
+        largeRoomCave.setExit("south", caveEntrance);
+        largeRoomCave.setExit("north", middleCavePath);
+        largeRoomCave.setExit("west", leftCavePath);
+        largeRoomCave.setExit("east", rightCavePath);
+        
+        leftCavePath.setExit("north", deepLeftCave);
+        
+        rightCavePath.setExit("north", deepRightCave);
+        
+        middleCavePath.setExit("north", deepMiddleCave);
+        
+        deepLeftCave.setExit("south", leftCavePath);
+        deepLeftCave.setExit("east", deepMiddleCave);
+        
+        deepRightCave.setExit("south", rightCavePath);
+        deepRightCave.setExit("west", deepMiddleCave);
+        
+        deepMiddleCave.setExit("south", middleCavePath);
+        deepMiddleCave.setExit("east", deepRightCave);
+        deepMiddleCave.setExit("west", deepLeftCave);
+        deepMiddleCave.setExit("north", artifactSite);
+                
+        currentRoom = crashedPod;  // start game outside
     }
 
     /**
@@ -84,8 +133,8 @@ public class Game
     private void printWelcome()
     {
         System.out.println();
-        System.out.println("Welcome to the World of Zuul!");
-        System.out.println("World of Zuul is a new, incredibly boring adventure game.");
+        System.out.println("Welcome to the World of Strange Events!");
+        System.out.println("World of Strange Events is a new, incredibly boring adventure game.");
         System.out.println("Type '" + CommandWord.HELP + "' if you need help.");
         System.out.println();
         System.out.println(currentRoom.getLongDescription());
@@ -132,7 +181,6 @@ public class Game
     private void printHelp() 
     {
         System.out.println("You are lost. You are alone. You wander");
-        System.out.println("around at the university.");
         System.out.println();
         System.out.println("Your command words are:");
         parser.showCommands();
@@ -156,7 +204,7 @@ public class Game
         Room nextRoom = currentRoom.getExit(direction);
 
         if (nextRoom == null) {
-            System.out.println("There is no door!");
+            System.out.println("There is no place to go!");
         }
         else {
             currentRoom = nextRoom;
@@ -178,5 +226,14 @@ public class Game
         else {
             return true;  // signal that we want to quit
         }
+    }
+    
+    /**
+     * prints location exits
+     * @method
+     */
+    public void printLocationExits()
+    {
+        currentRoom.getExitString();
     }
 }
