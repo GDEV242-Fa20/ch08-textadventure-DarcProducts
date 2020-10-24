@@ -1,3 +1,4 @@
+import java.util.HashMap;
 /**
  *  This class is the main class of the "World of Strange Events" application. 
  *  "World of Strange Events" is a very simple, text based adventure game.  Users 
@@ -19,7 +20,9 @@ public class Game
 {
     private Parser parser;
     private Room currentRoom;
-        
+    private HashMap<Item, String> myInventory;
+    private int myHealth = 10;
+    private int myStamina = 10;
     /**
      * Create the game and initialise its internal map.
      */
@@ -163,6 +166,34 @@ public class Game
             case GO:
                 goRoom(command);
                 break;
+                
+            case LOOK:
+                look();
+                break;
+                
+            case EAT:
+                tryEat();
+                break;
+                
+            case SHOOT:
+                tryShoot();
+                break;
+                
+            case GRAB:
+                tryGrab();
+                break;
+                
+            case APPLY:
+                tryApply();
+                break;
+                
+            case INSPECT:
+                inspect();
+                break;
+                
+            case STAB:
+                tryStab();
+                break;
 
             case QUIT:
                 wantToQuit = quit(command);
@@ -235,5 +266,97 @@ public class Game
     public void printLocationExits()
     {
         currentRoom.getExitString();
+    }
+    
+    /**
+     * gets the exits and room description
+     * @method
+     */
+    private void look()
+    {
+        System.out.println(currentRoom.getLongDescription());
+    }
+    
+    /**
+     * try to eat an item
+     * @method
+     */
+    private void tryEat()
+    {
+        
+    }
+    
+    /**
+     * try to shoot a gun
+     * @method
+     */
+    private void tryShoot()
+    {
+        
+    }
+    
+    /**
+     * try to grab an item
+     * @method
+     */
+    private void tryGrab()
+    {
+        
+    }
+    
+    /**
+     * try to inspect an item
+     * @method
+     */
+    private void inspect()
+    {
+        
+    }
+    
+    /**
+     * try to stab
+     * @method
+     */
+    private void tryStab()
+    {
+        
+    }
+    
+    /**
+     * try to apply something to an object
+     * @method
+     */
+    private void tryApply()
+    {
+        
+    }
+    
+    /**
+     * take 1 point of damage
+     * @method
+     */
+    private void takeDamage()
+    {
+        myHealth--;
+    }
+    
+    /**
+     * gain health points
+     * @method
+     */
+    private void addHealth(int value)
+    {
+        myHealth += value;
+    }
+    
+    /**
+     * adds item to inventory
+     * @method
+     * @param
+     */
+    private void addInventoryItem(Item item, Room from)
+    {
+        from.removeItem(item);
+        myInventory.put(item, item.getItemInfo());
     }
 }
