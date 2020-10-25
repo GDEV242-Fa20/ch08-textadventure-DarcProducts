@@ -21,6 +21,8 @@ public class Room
     private String description;
     private HashMap<String, Room> exits;        // stores exits of this room.
     private HashMap<Item, String> roomItems;
+    private String storyDescription;
+ 
     /**
      * Create a room described "description". Initially, it has
      * no exits. "description" is something like "a kitchen" or
@@ -31,6 +33,7 @@ public class Room
     {
         this.description = description;
         exits = new HashMap<>();
+        roomItems = new HashMap<Item, String>();
     }
 
     /**
@@ -62,10 +65,12 @@ public class Room
     {
         if (roomItems!=null)
         {
-            System.out.print("Current items in room: \n");
-            getItemsInRoom();
+            System.out.print("\n----------------------------------------\n ITEMS / WEIGHT:\n"
+                + "----------------------------------------\n");
+            printItemsInRoom();
         }
-        return "You are currently at: " + description + ".\n" + getExitString();
+        return "\n----------------------------------------\nYour CURRENT LOCATION is:\n"
+            + "----------------------------------------\n " + description + ".\n" + getExitString();
             
     }
 
@@ -76,7 +81,8 @@ public class Room
      */
     public String getExitString()
     {
-        String returnString = "Exits:";
+        String returnString = "\n----------------------------------------\nEXITS:\n"
+            + "----------------------------------------\n";
         Set<String> keys = exits.keySet();
         for(String exit : keys) {
             returnString += " " + exit;
@@ -96,13 +102,23 @@ public class Room
     }
     
     /**
+     * gets room hashmap
+     * @param
+     * @return
+     */
+    public HashMap getRoomHashMap()
+    {
+        return roomItems;
+    }
+    
+    /**
      * adds item to room
      * @method
      * @param
      */
-    public void addItem(Item thisItem, String description)
+    public void addItem(Item thisItem, String stringName)
     {
-        roomItems.put(thisItem, description);
+        roomItems.put(thisItem, stringName);
     }
     
     /**
@@ -110,24 +126,52 @@ public class Room
      * @method
      * @param
      */
-    public void removeItem(Item thisItem)
+    public void removeItem(String item)
     {
-        roomItems.remove(thisItem);
+        if (roomItems!=null)
+        {
+            roomItems.values().remove(item);
+            System.out.println("Removed a " + item + " from " + description);
+        }
     }
     
     /**
-     * gets items in room if any
+     * prints items in room if any
      * @method
-     * @param
-     * @return
      */
-    public void getItemsInRoom()
+    public void printItemsInRoom()
     {
         if (roomItems!=null)
         {
             for (Item thisItem : roomItems.keySet())
-            System.out.print(thisItem);
+            {
+                System.out.println(thisItem.getItemInfo() + " / " + thisItem.getItemWeight());
+            }
         }
+    }
+    
+    /**
+     * adds a description to room based on story
+     * @method
+     * @param
+     */
+    public void addStoryDescription(String story)
+    {
+        storyDescription = story;
+    }
+    
+    /**
+     * gets a description to room based on story
+     * @method
+     * @param
+     * @return
+     */
+    public String getStoryDescription()
+    {
+        if (storyDescription!=null)
+        return storyDescription;
+        else
+        return "";
     }
 }
 

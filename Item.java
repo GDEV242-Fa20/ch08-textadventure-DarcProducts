@@ -7,14 +7,14 @@
  */
 public class Item
 {
-    private String description;
+    private String nameOfItem;
     private float weight = 0f;
     /**
      * @constructor
      */
-    public Item(String itemInfo, float mass)
+    public Item(String itemName, float mass)
     {
-        description = itemInfo;
+        nameOfItem = itemName;
         weight = mass;
     }
     
@@ -25,6 +25,16 @@ public class Item
      */
     public String getItemInfo()
     {
-        return description;
+        return nameOfItem;
+    }
+    
+    /**
+     * gets items weight
+     * @method
+     * @return
+     */
+    public float getItemWeight()
+    {
+        return weight;
     }
 }

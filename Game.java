@@ -1,4 +1,6 @@
 import java.util.HashMap;
+import java.util.Collection;
+import java.util.Map;
 /**
  *  This class is the main class of the "World of Strange Events" application. 
  *  "World of Strange Events" is a very simple, text based adventure game.  Users 
@@ -20,7 +22,9 @@ public class Game
 {
     private Parser parser;
     private Room currentRoom;
+    private Room previousRoom = null;
     private HashMap<Item, String> myInventory;
+
     private int myHealth = 10;
     private int myStamina = 10;
     /**
@@ -107,8 +111,16 @@ public class Game
         deepMiddleCave.setExit("south", middleCavePath);
         deepMiddleCave.setExit("east", deepRightCave);
         deepMiddleCave.setExit("west", deepLeftCave);
-        deepMiddleCave.setExit("north", artifactSite);
-                
+        deepMiddleCave.setExit("north", artifactSite); //add something to do at artifact site
+        
+        //add items
+        crashedPod.addItem(new Item("flashlight", 1.2f), "flashlight");
+        crashedPod.addItem(new Item("battery", .8f), "battery");   
+        crashedPod.addItem(new Item("gun", .8f), "gun");
+        crashedPod.addItem(new Item("ammo", .8f), "ammo");
+        
+        encampment.addItem(new Item("knife", .8f), "knife");
+        
         currentRoom = crashedPod;  // start game outside
     }
 
@@ -180,7 +192,7 @@ public class Game
                 break;
                 
             case GRAB:
-                tryGrab();
+                tryGrab(command);
                 break;
                 
             case APPLY:
@@ -193,6 +205,9 @@ public class Game
                 
             case STAB:
                 tryStab();
+                break;
+            case BACK:
+                goBack(previousRoom);
                 break;
 
             case QUIT:
@@ -238,8 +253,10 @@ public class Game
             System.out.println("There is no place to go!");
         }
         else {
+            previousRoom = currentRoom;
             currentRoom = nextRoom;
-            System.out.println(currentRoom.getLongDescription());
+            //System.out.println(currentRoom.getLongDescription());
+            printUponEnter();
         }
     }
 
@@ -299,9 +316,22 @@ public class Game
      * try to grab an item
      * @method
      */
-    private void tryGrab()
+    private void tryGrab(Command command)
     {
-        
+        Collection<String> theseObjects = currentRoom.getRoomHashMap().values();
+        if (theseObjects!=null)
+        {
+            for (String object : theseObjects)
+            {
+                if (object.equals(command.getSecondWord()) && currentRoom.getRoomHashMap().containsValue(object))
+                {
+                    System.out.println("Grabbed a " + object + "!");
+                    currentRoom.removeItem(object);
+                    return;
+                }
+            }
+            System.out.println("Cannot find that around!");
+        }
     }
     
     /**
@@ -354,9 +384,48 @@ public class Game
      * @method
      * @param
      */
-    private void addInventoryItem(Item item, Room from)
+    private void addInventoryItem(Item item, String itemString)
     {
-        from.removeItem(item);
-        myInventory.put(item, item.getItemInfo());
+        myInventory.put(item, itemString);
+    }
+    
+    /**
+     * goes back a room if able
+     * @method
+     */
+    private void goBack(Room to)
+    {
+                
+    }
+    
+    /**
+     * prints location information upon entering
+     * @method
+     */
+    private void printUponEnter()
+    {
+        System.out.print("\n\n\nYou have ENTERED:\n\n" + currentRoom.getShortDescription() + " " + currentRoom.getStoryDescription() + 
+        "\n" + printInventory() + "\n" + printcurrentHealth() + "\n" + printInventory());
+    }
+    
+    /**
+     * prints inventory information
+     * @method
+     */
+    private String printInventory()
+    {
+        if (myInventory!=null)
+        return "Your INVENTORY: \n" + myInventory + "\n";
+        else return "";
+    }
+    
+    /**
+     * prints current health information
+     * @method
+     * @return
+     */
+    private String printcurrentHealth()
+    {
+        return "Your current HEALTH is: \n" + myHealth + "\n" + "Your current STAMINA is: \n" + myStamina + "\n";
     }
 }
