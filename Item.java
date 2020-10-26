@@ -8,9 +8,10 @@
 public class Item
 {
     private String nameOfItem;
-    private float weight = 0f;
+    private float weight;
     /**
      * @constructor
+     * @param
      */
     public Item(String itemName, float mass)
     {

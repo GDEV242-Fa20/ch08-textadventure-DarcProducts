@@ -1,6 +1,10 @@
+
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
+import java.util.ArrayList;
+
 /**
  *  This class is the main class of the "World of Strange Events" application. 
  *  "World of Strange Events" is a very simple, text based adventure game.  Users 
@@ -23,16 +27,19 @@ public class Game
     private Parser parser;
     private Room currentRoom;
     private Room previousRoom = null;
-    private HashMap<Item, String> myInventory;
-
+    private ArrayList<Item> myInventory;
+    private float currentWeight;
     private int myHealth = 10;
     private int myStamina = 10;
+    private static final int MAXCARRYWEIGHT = 20;
+    private boolean isInBattle = false;
     /**
      * Create the game and initialise its internal map.
      */
     public Game() 
     {
         createRooms();
+        myInventory = new ArrayList();
         parser = new Parser();
     }
 
@@ -42,11 +49,10 @@ public class Game
     private void createRooms()
     {
         Room crashedPod, encampment, acidBog, foggyCliffs, plains, 
-            thornForest, deepCanyon, caveEntrance, largeRoomCave, leftCavePath, 
-                middleCavePath, rightCavePath, deepLeftCave, deepRightCave, 
-                    deepMiddleCave, artifactSite;
-            
-      
+        thornForest, deepCanyon, caveEntrance, largeRoomCave, leftCavePath, 
+        middleCavePath, rightCavePath, deepLeftCave, deepRightCave, 
+        deepMiddleCave, artifactSite;
+
         // create the rooms
         crashedPod = new Room("crashed landing pod");
         encampment = new Room("make-shift encampment");
@@ -64,63 +70,68 @@ public class Game
         deepRightCave = new Room("deep right cave");
         deepMiddleCave = new Room("deep middle cave");
         artifactSite = new Room("artifact site");
-        
+
         // initialise room exits
         crashedPod.setExit("north", encampment);
         encampment.setExit("south", crashedPod);
         encampment.setExit("west", acidBog);
         encampment.setExit("east", foggyCliffs);
         encampment.setExit("north", plains);
-        
+
         acidBog.setExit("north", thornForest);
         acidBog.setExit("east", encampment);
-        
+
         foggyCliffs.setExit("north", deepCanyon);
         foggyCliffs.setExit("west", encampment);
-        
+
         thornForest.setExit("north", caveEntrance);
         thornForest.setExit("south", acidBog);
-        
+
         deepCanyon.setExit("north", caveEntrance);
         deepCanyon.setExit("north", foggyCliffs);
-        
+
         plains.setExit("north", caveEntrance);
         plains.setExit("south", encampment);
-        
+
         caveEntrance.setExit("north", largeRoomCave);
         caveEntrance.setExit("west", thornForest);
         caveEntrance.setExit("east", deepCanyon);
-        
+
         largeRoomCave.setExit("south", caveEntrance);
         largeRoomCave.setExit("north", middleCavePath);
         largeRoomCave.setExit("west", leftCavePath);
         largeRoomCave.setExit("east", rightCavePath);
-        
+
         leftCavePath.setExit("north", deepLeftCave);
-        
+
         rightCavePath.setExit("north", deepRightCave);
-        
+
         middleCavePath.setExit("north", deepMiddleCave);
-        
+
         deepLeftCave.setExit("south", leftCavePath);
         deepLeftCave.setExit("east", deepMiddleCave);
-        
+
         deepRightCave.setExit("south", rightCavePath);
         deepRightCave.setExit("west", deepMiddleCave);
-        
+
         deepMiddleCave.setExit("south", middleCavePath);
         deepMiddleCave.setExit("east", deepRightCave);
         deepMiddleCave.setExit("west", deepLeftCave);
         deepMiddleCave.setExit("north", artifactSite); //add something to do at artifact site
-        
+
         //add items
-        crashedPod.addItem(new Item("flashlight", 1.2f), "flashlight");
-        crashedPod.addItem(new Item("battery", .8f), "battery");   
-        crashedPod.addItem(new Item("gun", .8f), "gun");
-        crashedPod.addItem(new Item("ammo", .8f), "ammo");
-        
-        encampment.addItem(new Item("knife", .8f), "knife");
-        
+        artifactSite.addItem(new Item("artifact", 10f));
+
+        crashedPod.addItem(new Item("flashlight", 1.2f));
+        crashedPod.addItem(new Item("battery", .6f));   
+        crashedPod.addItem(new Item("gun", 2f));
+        crashedPod.addItem(new Item("ammo", 1f));
+
+        encampment.addItem(new Item("knife", 1.2f));
+        encampment.addItem(new Item("sedative", 1.2f));
+
+        crashedPod.addStoryDescription("You are at the landing site of the crashed pod.\nThere are small fires burning and the area is filled with smoke.");
+
         currentRoom = crashedPod;  // start game outside
     }
 
@@ -133,7 +144,7 @@ public class Game
 
         // Enter the main command loop.  Here we repeatedly read commands and
         // execute them until the game is over.
-                
+
         boolean finished = false;
         while (! finished) {
             Command command = parser.getCommand();
@@ -153,6 +164,8 @@ public class Game
         System.out.println("Type '" + CommandWord.HELP + "' if you need help.");
         System.out.println();
         System.out.println(currentRoom.getLongDescription());
+        System.out.println("Commands:\n");
+        parser.showCommands();
     }
 
     /**
@@ -168,51 +181,40 @@ public class Game
 
         switch (commandWord) {
             case UNKNOWN:
-                System.out.println("I don't know what you mean...");
-                break;
+            System.out.println("I don't understand...");
+            break;
 
             case HELP:
-                printHelp();
-                break;
+            printHelp();
+            break;
 
             case GO:
-                goRoom(command);
-                break;
-                
+            goRoom(command);
+            break;
+
             case LOOK:
-                look();
-                break;
-                
-            case EAT:
-                tryEat();
-                break;
-                
-            case SHOOT:
-                tryShoot();
-                break;
-                
+            look();
+            break;
+
+            case DROP:
+            drop(command);
+            break;
+
             case GRAB:
-                tryGrab(command);
-                break;
-                
-            case APPLY:
-                tryApply();
-                break;
-                
-            case INSPECT:
-                inspect();
-                break;
-                
-            case STAB:
-                tryStab();
-                break;
+            tryGrab(command);
+            break;
+            
+            case USE:
+            tryUse(command);
+            break;
+
             case BACK:
-                goBack(previousRoom);
-                break;
+            goBack();
+            break;
 
             case QUIT:
-                wantToQuit = quit(command);
-                break;
+            wantToQuit = quit(command);
+            break;
         }
         return wantToQuit;
     }
@@ -226,7 +228,7 @@ public class Game
      */
     private void printHelp() 
     {
-        System.out.println("You are lost. You are alone. You wander");
+        System.out.println("You are alone. You wander");
         System.out.println();
         System.out.println("Your command words are:");
         parser.showCommands();
@@ -238,25 +240,28 @@ public class Game
      */
     private void goRoom(Command command) 
     {
-        if(!command.hasSecondWord()) {
-            // if there is no second word, we don't know where to go...
-            System.out.println("Go where?");
-            return;
-        }
+        if (!isInBattle)
+        {
+            if(!command.hasSecondWord()) {
+                // if there is no second word, we don't know where to go...
+                System.out.println("Go where?");
+                return;
+            }
 
-        String direction = command.getSecondWord();
+            String direction = command.getSecondWord();
 
-        // Try to leave current room.
-        Room nextRoom = currentRoom.getExit(direction);
+            // Try to leave current room.
+            Room nextRoom = currentRoom.getExit(direction);
 
-        if (nextRoom == null) {
-            System.out.println("There is no place to go!");
-        }
-        else {
-            previousRoom = currentRoom;
-            currentRoom = nextRoom;
-            //System.out.println(currentRoom.getLongDescription());
-            printUponEnter();
+            if (nextRoom == null) {
+                System.out.println("There is no place to go!");
+            }
+            else {
+                previousRoom = currentRoom;
+                currentRoom = nextRoom;
+                //System.out.println(currentRoom.getLongDescription());
+                printUponEnter();
+            }
         }
     }
 
@@ -275,7 +280,7 @@ public class Game
             return true;  // signal that we want to quit
         }
     }
-    
+
     /**
      * prints location exits
      * @method
@@ -284,7 +289,7 @@ public class Game
     {
         currentRoom.getExitString();
     }
-    
+
     /**
      * gets the exits and room description
      * @method
@@ -292,75 +297,71 @@ public class Game
     private void look()
     {
         System.out.println(currentRoom.getLongDescription());
+        printInventory();
     }
     
     /**
-     * try to eat an item
+     * try to use an item
      * @method
+     * @param
      */
-    private void tryEat()
+    private void tryUse(Command command)
     {
-        
+
     }
     
     /**
-     * try to shoot a gun
+     * drop an item
      * @method
+     * @param
      */
-    private void tryShoot()
+    private void drop(Command command)
     {
-        
+        ArrayList<Item> theseObjects = myInventory;
+        if (theseObjects!=null)
+        {
+            for (Item object : theseObjects)
+            {
+                if (command.getSecondWord().equals(object.getItemInfo()))
+                {
+                    Item myItem = object;
+                    currentRoom.addItem(myItem);
+                    myInventory.remove(object);
+                    currentWeight -= object.getItemWeight();
+                    System.out.println("Dropped " + myItem.getItemInfo() + "\nRemoved " + myItem.getItemInfo() + " from inventory!");
+                    return;
+                } 
+                else
+                {
+                    System.out.println("drop what?");
+                    return;
+                }
+            }
+        }
     }
-    
+
     /**
      * try to grab an item
      * @method
      */
     private void tryGrab(Command command)
     {
-        Collection<String> theseObjects = currentRoom.getRoomHashMap().values();
+        Collection<String> theseObjects = currentRoom.getRoomItemsHashMap().values();
         if (theseObjects!=null)
         {
             for (String object : theseObjects)
             {
-                if (object.equals(command.getSecondWord()) && currentRoom.getRoomHashMap().containsValue(object))
+                if (object.equals(command.getSecondWord()) && currentRoom.getRoomItemsHashMap().containsValue(object))
                 {
-                    System.out.println("Grabbed a " + object + "!");
-                    currentRoom.removeItem(object);
+                    System.out.println("Grabbed " + object + "\n");
+                    tryAddInventoryItem(object);
                     return;
                 }
             }
-            System.out.println("Cannot find that around!");
+            System.out.println("try grabbing what?");
         }
     }
-    
-    /**
-     * try to inspect an item
-     * @method
-     */
-    private void inspect()
-    {
-        
-    }
-    
-    /**
-     * try to stab
-     * @method
-     */
-    private void tryStab()
-    {
-        
-    }
-    
-    /**
-     * try to apply something to an object
-     * @method
-     */
-    private void tryApply()
-    {
-        
-    }
-    
+
     /**
      * take 1 point of damage
      * @method
@@ -368,64 +369,93 @@ public class Game
     private void takeDamage()
     {
         myHealth--;
+        if (myHealth<=0)
+            System.out.println("You are dead!");
     }
-    
+
     /**
      * gain health points
      * @method
+     * @param
      */
     private void addHealth(int value)
     {
-        myHealth += value;
+        if (myHealth<10)
+            myHealth += value;
+        else System.out.print("You are at full health!");
     }
-    
+
     /**
      * adds item to inventory
      * @method
      * @param
      */
-    private void addInventoryItem(Item item, String itemString)
+    private void tryAddInventoryItem(String item)
     {
-        myInventory.put(item, itemString);
+        Item myItem = null;
+        Set<Item> itemsInRoom = currentRoom.getRoomItemsHashMap().keySet();
+        for (Item thisItem : itemsInRoom)
+        {
+            if (thisItem.getItemInfo().equals(item))
+            {
+                myItem = thisItem;
+                if (myItem!=null)
+                {
+                    if (myItem.getItemWeight() + currentWeight < MAXCARRYWEIGHT)
+                    {
+                        System.out.println("\nAdded " + myItem.getItemInfo() + " to inventory!");
+                        myInventory.add(myItem);
+                        currentWeight += myItem.getItemWeight();
+                        currentRoom.removeItem(myItem.getItemInfo());
+                        return;
+                    }
+                } else System.out.println("cannot pick up " + item);
+            }
+        }
     }
-    
+  
     /**
      * goes back a room if able
      * @method
      */
-    private void goBack(Room to)
+    public void goBack()
     {
-                
+
     }
-    
+
     /**
-     * prints location information upon entering
+     * prints location information upon entering room
      * @method
      */
     private void printUponEnter()
     {
         System.out.print("\n\n\nYou have ENTERED:\n\n" + currentRoom.getShortDescription() + " " + currentRoom.getStoryDescription() + 
-        "\n" + printInventory() + "\n" + printcurrentHealth() + "\n" + printInventory());
+            "\n" + "\n" + "HEALTH: " + myHealth + " : " + "STAMINA:" + myStamina + "\n"); 
+        printInventory(); 
+        currentRoom.getStoryDescription();
     }
-    
+
     /**
      * prints inventory information
      * @method
      */
-    private String printInventory()
+    public void printInventory()
     {
+        System.out.print("\nINVENTORY:\n");
         if (myInventory!=null)
-        return "Your INVENTORY: \n" + myInventory + "\n";
-        else return "";
+        for (Item myItem : myInventory)
+        System.out.println(myItem.getItemInfo() + " / " + myItem.getItemWeight());
+        else System.out.print("There are no items in your inventory!\n");
+        System.out.print("\nCurrent weight: " + getCurrentWeight() + "\n");
     }
     
     /**
-     * prints current health information
+     * gets current weight
      * @method
      * @return
      */
-    private String printcurrentHealth()
+    private float getCurrentWeight()
     {
-        return "Your current HEALTH is: \n" + myHealth + "\n" + "Your current STAMINA is: \n" + myStamina + "\n";
+        return currentWeight;
     }
 }
