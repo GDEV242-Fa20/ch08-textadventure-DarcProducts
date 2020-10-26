@@ -43,7 +43,7 @@ public class Command
     {
         return commandWord;
     }
-
+ 
     /**
      * @return The second word of this command. Returns null if there was no
      * second word.

@@ -1,4 +1,3 @@
-
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Set;
@@ -26,13 +25,22 @@ public class Game
 {
     private Parser parser;
     private Room currentRoom;
-    private Room previousRoom = null;
     private ArrayList<Item> myInventory;
     private float currentWeight;
     private int myHealth = 10;
     private int myStamina = 10;
     private static final int MAXCARRYWEIGHT = 20;
     private boolean isInBattle = false;
+    private String previousDirection = "";
+    /**
+     * main method to start game
+     */
+    public static void main(String[] args)
+    {
+        Game myGame = new Game();
+        myGame.play();
+    }
+    
     /**
      * Create the game and initialise its internal map.
      */
@@ -247,9 +255,8 @@ public class Game
                 System.out.println("Go where?");
                 return;
             }
-
+            setPreviousDirection(command.getSecondWord());
             String direction = command.getSecondWord();
-
             // Try to leave current room.
             Room nextRoom = currentRoom.getExit(direction);
 
@@ -257,12 +264,27 @@ public class Game
                 System.out.println("There is no place to go!");
             }
             else {
-                previousRoom = currentRoom;
                 currentRoom = nextRoom;
                 //System.out.println(currentRoom.getLongDescription());
                 printUponEnter();
             }
         }
+    }
+    
+    /**
+     * set previous string
+     * @method
+     */
+    private void setPreviousDirection(String myString)
+    {
+        if (myString.equals("north"))
+        previousDirection = "south";
+        else if (myString.equals("south"))
+        previousDirection = "north";
+        else if (myString.equals("east"))
+        previousDirection = "west";
+        else if (myString.equals("west"))
+        previousDirection = "east";
     }
 
     /** 
@@ -415,14 +437,13 @@ public class Game
     }
   
     /**
-     * goes back a room if able
-     * @method
-     */
-    public void goBack()
+     * goes back room if able
+     */    
+    private void goBack()
     {
-
+        goRoom(new Command(CommandWord.GO, previousDirection));
     }
-
+    
     /**
      * prints location information upon entering room
      * @method
