@@ -57,7 +57,7 @@ public class Room
     public void trySpawnWorm()
     {
         int chanceToSpawn = rand.nextInt(101);
-        if (chanceToSpawn<20)
+        if (chanceToSpawn<60)
         {
             roomCreatures.add(new Creature("strange worm",1,1));
         }
@@ -71,6 +71,26 @@ public class Room
     public void setExit(String direction, Room neighbor) 
     {
         exits.put(direction, neighbor);
+    }
+    
+    /**
+     * check if win
+     * @method
+     * @return
+     */
+    public Boolean checkWin(ArrayList myInventory)
+    {
+        Boolean isFinished = false;
+        ArrayList<Item> thisInventory = myInventory;
+        for (Item artifact : thisInventory)
+        {
+            if (artifact.getItemInfo().equals("artifact"))
+            {
+                System.out.print("\n\n\n\n\nYOU WIN!!!!!\n\n\n\n\n");
+                isFinished = true;
+            }else isFinished = false;
+        }
+        return isFinished;
     }
 
     /**

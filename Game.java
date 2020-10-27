@@ -28,7 +28,7 @@ public class Game
     private ArrayList<Item> myInventory;
     private float currentWeight;
     private int myHealth = 10;
-    private int myStamina = 10;
+    private int myStamina = 20;
     private static final int MAXCARRYWEIGHT = 20;
     private boolean isInBattle = false;
     private String previousDirection = "";
@@ -144,6 +144,7 @@ public class Game
         encampment.addStoryDescription("");
         acidBog.addStoryDescription("");
         foggyCliffs.addStoryDescription("");
+        thornForest.addStoryDescription("");
         
         currentRoom = crashedPod;  // start game outside
     }
@@ -339,6 +340,7 @@ public class Game
                 System.out.println(myCreature.getName());
             }
         }
+        currentRoom.checkWin(myInventory);
     }
         
     /**
@@ -382,7 +384,7 @@ public class Game
             {
                 System.out.println("You do not have ammo!");
             } 
-            else 
+            else if (myGun==null && myAmmo==null)
             System.out.println("You do not have a gun!");
         }
         else if (command.getSecondWord().equals("sedative"))
@@ -456,7 +458,6 @@ public class Game
             {
                 if (object.equals(command.getSecondWord()) && currentRoom.getRoomItemsHashMap().containsValue(object))
                 {
-                    System.out.println("Grabbed " + object + "\n");
                     tryAddInventoryItem(object);
                     return;
                 }
@@ -516,8 +517,10 @@ public class Game
                 myItem = thisItem;
                 if (myItem!=null)
                 {
-                    if (myItem.getItemWeight() + currentWeight < MAXCARRYWEIGHT)
+                    float totalWeight = myItem.getItemWeight() + currentWeight;
+                    if (totalWeight < MAXCARRYWEIGHT)
                     {
+                        System.out.println("Grabbed " + myItem.getItemInfo() + "\n");
                         System.out.println("\nAdded " + myItem.getItemInfo() + " to inventory!");
                         myInventory.add(myItem);
                         currentWeight += myItem.getItemWeight();
