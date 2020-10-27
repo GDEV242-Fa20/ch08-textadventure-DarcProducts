@@ -9,12 +9,14 @@ public class Item
 {
     private String nameOfItem;
     private float weight;
+    private int amount;
     /**
      * @constructor
      * @param
      */
-    public Item(String itemName, float mass)
+    public Item(String itemName, float mass, int amount)
     {
+        this.amount = amount;
         nameOfItem = itemName;
         weight = mass;
     }
@@ -37,5 +39,15 @@ public class Item
     public float getItemWeight()
     {
         return weight;
+    }
+    
+    /**
+     * gets items amount
+     * @method
+     * @return
+     */
+    public int getItemAmount()
+    {
+        return amount;
     }
 }

@@ -104,8 +104,9 @@ public class Game
         caveEntrance.setExit("north", largeRoomCave);
         caveEntrance.setExit("west", thornForest);
         caveEntrance.setExit("east", deepCanyon);
-
-        largeRoomCave.setExit("south", caveEntrance);
+        caveEntrance.setExit("south", plains);
+        
+        //once pass cave entrance it collapses
         largeRoomCave.setExit("north", middleCavePath);
         largeRoomCave.setExit("west", leftCavePath);
         largeRoomCave.setExit("east", rightCavePath);
@@ -125,21 +126,25 @@ public class Game
         deepMiddleCave.setExit("south", middleCavePath);
         deepMiddleCave.setExit("east", deepRightCave);
         deepMiddleCave.setExit("west", deepLeftCave);
-        deepMiddleCave.setExit("north", artifactSite); //add something to do at artifact site
+        //add something to do at artifact site
+        deepMiddleCave.setExit("north", artifactSite);
 
         //add items
-        artifactSite.addItem(new Item("artifact", 10f));
+        artifactSite.addItem(new Item("artifact", 10f, 1));
 
-        crashedPod.addItem(new Item("flashlight", 1.2f));
-        crashedPod.addItem(new Item("battery", .6f));   
-        crashedPod.addItem(new Item("gun", 2f));
-        crashedPod.addItem(new Item("ammo", 1f));
+        crashedPod.addItem(new Item("flashlight", 1.2f, 1));  
+        crashedPod.addItem(new Item("gun", 2f, 1));
+        crashedPod.addItem(new Item("ammo", 1f, 8));
 
-        encampment.addItem(new Item("knife", 1.2f));
-        encampment.addItem(new Item("sedative", 1.2f));
+        encampment.addItem(new Item("knife", 1.2f, 1));
+        encampment.addItem(new Item("sedative", 1.2f, 1));
+        encampment.addItem(new Item("first-aid", 1.2f, 1));
 
         crashedPod.addStoryDescription("You are at the landing site of the crashed pod.\nThere are small fires burning and the area is filled with smoke.");
-
+        encampment.addStoryDescription("");
+        acidBog.addStoryDescription("");
+        foggyCliffs.addStoryDescription("");
+        
         currentRoom = crashedPod;  // start game outside
     }
 
@@ -172,7 +177,9 @@ public class Game
         System.out.println("Type '" + CommandWord.HELP + "' if you need help.");
         System.out.println();
         System.out.println(currentRoom.getLongDescription());
-        System.out.println("Commands:\n");
+        System.out.println("\nCurrent WEIGHT: " + currentWeight);
+        printHealthInfo();
+        System.out.println("----------------------------------------\nCommands:\n");
         parser.showCommands();
     }
 
@@ -248,7 +255,7 @@ public class Game
      */
     private void goRoom(Command command) 
     {
-        if (!isInBattle)
+        if (!isInBattle && myStamina>0)
         {
             if(!command.hasSecondWord()) {
                 // if there is no second word, we don't know where to go...
@@ -267,8 +274,11 @@ public class Game
                 currentRoom = nextRoom;
                 //System.out.println(currentRoom.getLongDescription());
                 printUponEnter();
+                myStamina--;
             }
-        }
+        } else System.out.println("You cannot run!");
+        if (currentRoom.equals("largeRoomCave"))
+        System.out.println("The entrance to the cave collapses!");
     }
     
     /**
@@ -320,8 +330,17 @@ public class Game
     {
         System.out.println(currentRoom.getLongDescription());
         printInventory();
+        printHealthInfo();
+        if (!currentRoom.getListCreatures().isEmpty())
+        {
+            System.out.println(":::Creatures in area:::\n");
+            for (Creature myCreature : currentRoom.getListCreatures())
+            {
+                System.out.println(myCreature.getName());
+            }
+        }
     }
-    
+        
     /**
      * try to use an item
      * @method
@@ -329,7 +348,69 @@ public class Game
      */
     private void tryUse(Command command)
     {
-
+        if (command.getSecondWord().equals("firstAid"))
+        {
+            for (Item eachItem : myInventory)
+            {
+                if (eachItem.getItemInfo().equals("firstAid"))
+                {
+                    addHealth(10);
+                    myInventory.remove(eachItem);
+                    return;
+                }
+            }
+        }
+        else if (command.getSecondWord().equals("gun"))
+        {
+            Item myGun = null; Item myAmmo = null;
+            for (Item myItem : myInventory)
+            {
+                if (myItem.getItemInfo().equals("gun"))
+                myGun = myItem;
+                if (myItem.getItemInfo().equals("ammo"))
+                myAmmo = myItem;
+            }
+            if (myGun!=null && myAmmo!=null)
+            {
+                if (!currentRoom.getListCreatures().isEmpty())
+                {
+                    System.out.println("You shoot your gun at " + currentRoom.getListCreatures().get(0).getName() + " , it screaches in agony and dies!" );
+                    currentRoom.getListCreatures().remove(0);
+                }
+            }
+            if (myGun!=null && myAmmo==null)
+            {
+                System.out.println("You do not have ammo!");
+            } 
+            else 
+            System.out.println("You do not have a gun!");
+        }
+        else if (command.getSecondWord().equals("sedative"))
+        {
+            
+        }
+        else if (command.getSecondWord().equals("knife"))
+        {
+            for (Item myItem : myInventory)
+            {
+                if (myItem.getItemInfo().equals("knife"))
+                {
+                    if (!currentRoom.getListCreatures().isEmpty())
+                    {
+                        System.out.println("You have slashed " + currentRoom.getListCreatures().get(0).getName());
+                        currentRoom.getListCreatures().get(0).takeDamage(1);
+                        if (currentRoom.getListCreatures().get(0).getHealth()<=0)
+                        currentRoom.getListCreatures().remove(0);
+                    }
+                }
+            }
+        }
+        else if (command.getSecondWord().equals("flashlight"))
+        {
+            
+        }
+        else 
+        System.out.println("Use what?");
     }
     
     /**
@@ -388,13 +469,21 @@ public class Game
      * take 1 point of damage
      * @method
      */
-    private void takeDamage()
+    private void takeDamage(int damage)
     {
-        myHealth--;
+        myHealth -= damage;
         if (myHealth<=0)
             System.out.println("You are dead!");
     }
 
+    /**
+     * prints health info
+     */
+    private void printHealthInfo()
+    {
+        System.out.println("\nCurrent HEALTH: " + myHealth + "\t" + "Current STAMINA: " + myStamina + "\n");
+    }
+    
     /**
      * gain health points
      * @method
@@ -404,7 +493,11 @@ public class Game
     {
         if (myHealth<10)
             myHealth += value;
-        else System.out.print("You are at full health!");
+        else if (myHealth>=10)
+        {
+            myHealth = 10;
+            System.out.print("You are at full health!");
+        }
     }
 
     /**
@@ -450,10 +543,19 @@ public class Game
      */
     private void printUponEnter()
     {
-        System.out.print("\n\n\nYou have ENTERED:\n\n" + currentRoom.getShortDescription() + " " + currentRoom.getStoryDescription() + 
-            "\n" + "\n" + "HEALTH: " + myHealth + " : " + "STAMINA:" + myStamina + "\n"); 
-        printInventory(); 
-        currentRoom.getStoryDescription();
+     System.out.print("----------------------------------------\n:::You have ENTERED:::\n" + currentRoom.getShortDescription() + " " + currentRoom.getStoryDescription()); 
+     currentRoom.trySpawnWorm();
+     if (currentRoom.getListCreatures()!=null)
+     {
+        for (Creature myCreature : currentRoom.getListCreatures())
+        {
+            System.out.println("\n\nA " + myCreature.getName() + " damages you for " + myCreature.getDamage() + " point of damage!\n");
+            takeDamage(myCreature.getDamage());
+        }
+     }
+     System.out.print("\n" + "HEALTH: " + myHealth + " : " + "STAMINA:" + myStamina + "\n"); 
+     printInventory(); 
+     currentRoom.getStoryDescription();
     }
 
     /**
@@ -467,7 +569,7 @@ public class Game
         for (Item myItem : myInventory)
         System.out.println(myItem.getItemInfo() + " / " + myItem.getItemWeight());
         else System.out.print("There are no items in your inventory!\n");
-        System.out.print("\nCurrent weight: " + getCurrentWeight() + "\n");
+        System.out.print("Current weight: " + getCurrentWeight() + "\n----------------------------------------\n");
     }
     
     /**

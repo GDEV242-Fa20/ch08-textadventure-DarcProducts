@@ -1,7 +1,8 @@
 import java.util.Set;
 import java.util.HashMap;
 import java.util.Iterator;
-
+import java.util.Random;
+import java.util.ArrayList;
 /**
  * Class Room - a room in an adventure game.
  *
@@ -22,7 +23,8 @@ public class Room
     private HashMap<String, Room> exits;        // stores exits of this room.
     private HashMap<Item, String> roomItems;
     private String storyDescription;
- 
+    private ArrayList<Creature> roomCreatures;
+    private Random rand = new Random();
     /**
      * Create a room described "description". Initially, it has
      * no exits. "description" is something like "acid bog" or
@@ -33,7 +35,32 @@ public class Room
     {
         this.description = description;
         exits = new HashMap<>();
+        roomCreatures = new ArrayList();
         roomItems = new HashMap<Item, String>();
+    }
+    
+    /**
+     * gets creature list
+     * @method
+     * @return
+     */
+    public ArrayList<Creature> getListCreatures()
+    {
+      return roomCreatures;  
+    }
+    
+    /**
+     * try spawn creature
+     * @method
+     * @return
+     */
+    public void trySpawnWorm()
+    {
+        int chanceToSpawn = rand.nextInt(101);
+        if (chanceToSpawn<20)
+        {
+            roomCreatures.add(new Creature("strange worm",1,1));
+        }
     }
 
     /**
@@ -65,15 +92,15 @@ public class Room
     {
         if (roomItems!=null)
         {
-            System.out.print("\n----------------------------------------\nITEMS / WEIGHT:\n"
-                + "----------------------------------------\n");
+            System.out.print("\n----------------------------------------\n:::ITEMS / WEIGHT:::\n");
             printItemsInRoom();
         }
-        return "\n----------------------------------------\nYour CURRENT LOCATION is:\n"
-            + "----------------------------------------\n " + description + ".\n\n" + getStoryDescription() + "\n" + getExitString();
+        String myDescription = "----------------------------------------\n:::Your CURRENT LOCATION is:::\n"
+            + description + ".\n" + getStoryDescription() + "\n" + getExitString();
+        return myDescription;
             
     }
-
+    
     /**
      * Return a string describing the room's exits, for example
      * "Exits: north west".
@@ -81,8 +108,7 @@ public class Room
      */
     public String getExitString()
     {
-        String returnString = "\n----------------------------------------\nEXITS:\n"
-            + "----------------------------------------\n";
+        String returnString = "----------------------------------------\n:::EXITS:::\n";
         Set<String> keys = exits.keySet();
         for(String exit : keys) {
             returnString += " " + exit;
@@ -145,7 +171,7 @@ public class Room
         {
             for (Item thisItem : roomItems.keySet())
             {
-                System.out.println(thisItem.getItemInfo() + " / " + thisItem.getItemWeight() + "\n");
+                System.out.println(thisItem.getItemInfo() + " / " + thisItem.getItemWeight());
             }
         } else System.out.println("No items in room!");
     }
@@ -170,7 +196,7 @@ public class Room
     {
         if (storyDescription!=null)
         return storyDescription;
-        else
+        else        
         return "";
     }
 }
