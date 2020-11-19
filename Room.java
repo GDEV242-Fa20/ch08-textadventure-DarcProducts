@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 public class Room 
 {
-    private String description;
+    private String description = null;
     private HashMap<String, Room> exits;        // stores exits of this room.
     private ArrayList<Item> roomItems;
     private String storyDescription;
@@ -93,12 +93,12 @@ public class Room
     }
 
     /**
-     * @return The short description of the room
+     *The short description of the room
      * (the one that was defined in the constructor).
      */
-    public String getShortDescription()
+    public void printShortDescription()
     {
-        return description;
+        System.out.println(description);
     }
 
     /**
@@ -107,17 +107,19 @@ public class Room
      *     Exits: north west
      * @return A long description of this room
      */
-    public String getLongDescription()
+    public void printLongDescription()
     {
-        if (roomItems!=null)
+        
+        System.out.println("\n----->Your CURRENT LOCATION is<-----");
+        if (description!=null)
+            System.out.println(description);
+        printStoryDescription();
+        if (!roomItems.isEmpty())
         {
-            System.out.print("\n----------------------------------------\n:::ROOM ITEMS / WEIGHT:::\n");
+            System.out.println("\n----->ROOM ITEMS / WEIGHT / AMOUNT<-----");
             printItemsInRoom();
         }
-        String myDescription = "----------------------------------------\n:::Your CURRENT LOCATION is:::\n"
-            + description + ".\n" + getStoryDescription() + "\n" + getExitString();
-        return myDescription;
-            
+        printExitString();       
     }
     
     /**
@@ -125,14 +127,13 @@ public class Room
      * "Exits: north west".
      * @return Details of the room's exits.
      */
-    public String getExitString()
+    public void printExitString()
     {
-        String returnString = "----------------------------------------\n:::EXITS:::\n";
+        System.out.println("\n----->EXITS<-----");
         Set<String> keys = exits.keySet();
         for(String exit : keys) {
-            returnString += " " + exit;
-        } returnString += "\n----------------------------------------";
-        return returnString;
+            System.out.println(exit);
+        }
     }
 
     /**
@@ -171,10 +172,10 @@ public class Room
      */
     public void removeItem(Item item)
     {
-        if (roomItems!=null)
+        if (!roomItems.isEmpty())
         {
             roomItems.remove(item);
-            System.out.println("Removed " + item.getName() + " from " + description);
+            System.out.println("Removed " + item.getName() + " from " + description + ".");
         }
     }
     
@@ -183,13 +184,13 @@ public class Room
      */
     public void printItemsInRoom()
     {
-        if (roomItems!=null)
+        if (!roomItems.isEmpty())
         {
             for (Item thisItem : roomItems)
             {
-                System.out.println(thisItem.getName() + " / " + thisItem.getTotalWeight());
+                System.out.println(thisItem.getName() + " / " + thisItem.getTotalWeight() + " / " + thisItem.getItemAmount());
             }
-        } else System.out.println("No items in room!");
+        } else System.out.println("There are no items in room!");
     }
     
     /**
@@ -216,12 +217,9 @@ public class Room
      * @param
      * @return
      */
-    public String getStoryDescription()
+    public void printStoryDescription()
     {
-        if (storyDescription!=null)
-        return storyDescription;
-        else        
-        return "";
+        System.out.println(storyDescription);
     }
 }
 

@@ -28,8 +28,10 @@ public class Game
     private Room currentRoom;
     private ArrayList<Item> myInventory;
     private float currentWeight;
-    private int myHealth = 10;
-    private int myStamina = 20;
+    private int currentHealth = 10;
+    private static final int MAXHEALTH = 10;
+    private int currentStamina = 20;
+    private static final int MAXSTAMINA = 20;
     private static final int MAXCARRYWEIGHT = 20;
     private boolean isInBattle = false;
     private String previousDirection = "";
@@ -52,7 +54,7 @@ public class Game
      */
     public Game() 
     {
-        f =  new DecimalFormat("#0.##");
+        f =  new DecimalFormat("#0.00");
         rand = new Random();
         createRooms();
         myInventory = new ArrayList();
@@ -142,15 +144,15 @@ public class Game
         encampment.addItem(new Item("sedative", 1.2f, 1));
         encampment.addItem(new Item("first-aid", 1.2f, 1));
 
-        crashedPod.addStoryDescription("\nYou are at the landing site of the crashed pod. There are small fires burning and the area is filled with smoke.");
-        encampment.addStoryDescription("\nYou are at a small make-shift encampment. It looks like someone has been here before you.");
-        acidBog.addStoryDescription("\nYou are in a bog with acid filled pits. There is smoke with green tint all around.");
-        foggyCliffs.addStoryDescription("\nYou are surrounded by fog. From what you can see, there are steep cliffs and sharp rocks in all directions.");
-        thornForest.addStoryDescription("\nThere are strange black trees everywhere that are covered in large thorns.");
+        crashedPod.addStoryDescription("You are at the landing site of the crashed pod. There are small fires burning and the area is filled with smoke.");
+        encampment.addStoryDescription("You are at a small make-shift encampment. It looks like someone has been here before you.");
+        acidBog.addStoryDescription("You are in a bog with acid filled pits. There is smoke with green tint all around.");
+        foggyCliffs.addStoryDescription("You are surrounded by fog. From what you can see, there are steep cliffs and sharp rocks in all directions.");
+        thornForest.addStoryDescription("There are strange black trees everywhere that are covered in large thorns.");
         deepCanyon.addStoryDescription("");
         caveEntrance.addStoryDescription("");
-        largeRoomCave.addStoryDescription("\nA large dark cave room. The air is cool in here.You can barely see any of the paths ahead.");
-        middleCavePath.addStoryDescription("\nThe cave is lined with mushrooms that each produce a small blue glow, illuminating the cave path ahead.");
+        largeRoomCave.addStoryDescription("A large dark cave room. The air is cool in here.You can barely see any of the paths ahead.");
+        middleCavePath.addStoryDescription("The cave is lined with mushrooms that each produce a small blue glow, illuminating the cave path ahead.");
         leftCavePath.addStoryDescription("");
         rightCavePath.addStoryDescription("");
         deepMiddleCave.addStoryDescription("");
@@ -188,12 +190,11 @@ public class Game
         System.out.println("Welcome to the World of Strange Events!");
         System.out.println("World of Strange Events is a new, incredibly boring adventure game.");
         System.out.println("Type '" + CommandWord.HELP + "' if you need help.");
-        System.out.println();
-        System.out.println(currentRoom.getLongDescription());
-        System.out.println("\nCurrent WEIGHT: " + currentWeight);
-        printHealthInfo();
-        System.out.println("----------------------------------------\nCommands:\n");
-        parser.showCommands();
+        System.out.println(); currentRoom.printLongDescription();
+        System.out.println(); printInventory();
+        System.out.println(); printHealthInfo();
+        System.out.println(); System.out.println("\n----->Commands<-----");
+        parser.showCommands(); System.out.println();
     }
 
     /**
@@ -269,7 +270,7 @@ public class Game
     private void goRoom(Command command) 
     {
         //haven't implemented isInBattle yet
-        if (!isInBattle && myStamina>0)
+        if (!isInBattle && currentStamina>0)
         {
             if(!command.hasSecondWord()) {
                 // if there is no second word, we don't know where to go...
@@ -288,7 +289,7 @@ public class Game
                 currentRoom = nextRoom;
                 //System.out.println(currentRoom.getLongDescription());
                 printUponEnter();
-                myStamina--;
+                currentStamina--;
             }
         } else System.out.println("You cannot run!");
         
@@ -338,7 +339,7 @@ public class Game
      */
     private void printLocationExits()
     {
-        currentRoom.getExitString();
+        currentRoom.printExitString();
     }
 
     /**
@@ -347,10 +348,10 @@ public class Game
      */
     private void look()
     {
-        System.out.println(currentRoom.getLongDescription());
+        checkRoomCreatures();
+        currentRoom.printLongDescription();
         printInventory();
         printHealthInfo();
-        checkRoomCreatures();
         currentRoom.checkWin(myInventory);
     }
         
@@ -390,6 +391,7 @@ public class Game
                         myAmmo.setItemAmount(myAmmo.getItemAmount()-1);
                         myAmmo.setWeight();
                         currentWeight -= myAmmo.getSingleWeight();
+                        //shoots first creature in arraylist (subject to change)
                         currentRoom.getListCreatures().get(0).takeDamage(2);
                         if (currentRoom.getListCreatures().get(0).getHealth()<=0)
                         {
@@ -464,7 +466,10 @@ public class Game
                         flashLightUses--;
                         //create reason to use flashlight
                         if (rand.nextInt(101)<51)
-                            currentRoom.addItem(new Item("ammo", 0.2f, 4));
+                            {
+                                currentRoom.addItem(new Item("ammo", 0.2f, 4));
+                                System.out.println("You see some ammo on the other side of the cave floor.");
+                            }
                         }
                         else 
                         {
@@ -489,11 +494,10 @@ public class Game
      */
     private void drop(Command command)
     {
-        ArrayList<Item> theseObjects = myInventory;
         String objectToDrop = command.getSecondWord();
         Item thisItem = null;
-        if (!theseObjects.isEmpty())
-            for (Item object : theseObjects)
+        if (!myInventory.isEmpty())
+            for (Item object : myInventory)
                 if (object.getName().equals(objectToDrop))
                     thisItem = object;
         if (thisItem!=null)
@@ -501,7 +505,7 @@ public class Game
             currentRoom.addItem(thisItem);
             myInventory.remove(thisItem);
             currentWeight -= thisItem.getTotalWeight();
-            System.out.println("Dropped " + thisItem.getName() + "\nRemoved " + thisItem.getName() + " from inventory!");
+            System.out.println("Removed " + thisItem.getName() + " from inventory!");
         }
         else
             System.out.println("Drop what?");
@@ -517,15 +521,9 @@ public class Game
         String itemName = command.getSecondWord();
         Item grabbedItem = null;
         if (!theseObjects.isEmpty())
-        {
             for (Item object : theseObjects)
-            {
                 if (object.getName().equals(itemName))
-                {
                     grabbedItem = object;
-                }
-            }
-        }
         if (grabbedItem!=null)
             tryAddInventoryItem(grabbedItem);
         else
@@ -539,12 +537,10 @@ public class Game
     {
         if (!currentRoom.getListCreatures().isEmpty())
         {
-            System.out.println(":::Creatures in area:::\n");
+            System.out.println("\n----->Creatures in area<-----");
             for (Creature myCreature : currentRoom.getListCreatures())
-            {
                 System.out.println(myCreature.getName());
-            }
-        }
+        } else System.out.println("There are no creatures around.");
     }
     
     /**
@@ -553,8 +549,8 @@ public class Game
      */
     private void takeDamage(int damage)
     {
-        myHealth -= damage;
-        if (myHealth<=0)
+        currentHealth -= damage;
+        if (currentHealth<=0)
             System.out.println("You are dead!");
     }
 
@@ -563,7 +559,7 @@ public class Game
      */
     private void printHealthInfo()
     {
-        System.out.println("\nCurrent HEALTH: " + myHealth + "\t" + "Current STAMINA: " + myStamina + "\n");
+        System.out.println("Current HEALTH: " + currentHealth + "\t" + "Current STAMINA: " + currentStamina);
     }
     
     /**
@@ -573,11 +569,15 @@ public class Game
      */
     private void addHealth(int value)
     {
-        if (myHealth<10)
-            myHealth += value;
-        else if (myHealth>=10)
+        if (currentHealth<MAXHEALTH)
         {
-            myHealth = 10;
+            int currentValue = value - currentHealth;
+            System.out.print("Healed for " + currentValue);
+            currentHealth += value;
+        }
+        else if (currentHealth>=MAXHEALTH)
+        {
+            currentHealth = MAXHEALTH;
             System.out.print("You are at full health!");
         }
     }
@@ -591,19 +591,33 @@ public class Game
     {
         Item myItem = null;
         ArrayList<Item> itemsInRoom = currentRoom.getRoomItems();
+        
         for (Item thisItem : itemsInRoom)
             if (thisItem.getName().equals(item.getName()))
                 myItem = thisItem;
+        
         if (myItem!=null)
         {
             float totalWeight = myItem.getTotalWeight() + currentWeight;
-            if (totalWeight < MAXCARRYWEIGHT)
+            Item checkInventory = null;
+            
+            for (Item inventoryItem : myInventory)
+                if (inventoryItem.getName().equals(myItem.getName()))
+                    checkInventory = inventoryItem;
+            
+            if (totalWeight < MAXCARRYWEIGHT && checkInventory!=null)
             {
-                 System.out.println("Grabbed " + myItem.getName() + "\n");
-                 System.out.println("\nAdded " + myItem.getName() + " to inventory!");
-                 myInventory.add(myItem);
-                 currentWeight += myItem.getTotalWeight();
-                 currentRoom.removeItem(myItem);
+                currentWeight += myItem.getTotalWeight();                
+                checkInventory.setItemAmount(checkInventory.getItemAmount() + myItem.getItemAmount());
+                checkInventory.setWeight();
+                currentRoom.removeItem(checkInventory);
+            }
+            else if (totalWeight < MAXCARRYWEIGHT && checkInventory==null)
+            {
+                myInventory.add(myItem);
+                currentWeight += myItem.getTotalWeight();
+                currentRoom.removeItem(myItem);
+                System.out.println("Added " + myItem.getName() + " to inventory!");
             }
         } else System.out.println("Cannot find " + item.getName() + ".");
     }
@@ -622,19 +636,21 @@ public class Game
      */
     private void printUponEnter()
     {
-     System.out.print("----------------------------------------\n:::You have ENTERED:::\n" + currentRoom.getShortDescription() + "\n" + currentRoom.getStoryDescription() + "\n"); 
+     System.out.println("\n----->You have ENTERED<-----");
+     currentRoom.printShortDescription();
+     currentRoom.printStoryDescription(); 
      currentRoom.trySpawnWorm();
-     if (currentRoom.getListCreatures()!=null)
+     if (!currentRoom.getListCreatures().isEmpty())
      {
+        System.out.println("You get attacked!");
         for (Creature myCreature : currentRoom.getListCreatures())
         {
-            System.out.println("\n\nA " + myCreature.getName() + " damages you for " + myCreature.getDamage() + " point of damage!\n");
+            System.out.println("A " + myCreature.getName() + " damages you for " + myCreature.getDamage() + " point of damage!");
             takeDamage(myCreature.getDamage());
         }
      }
-     System.out.print("\n" + "HEALTH: " + myHealth + " : " + "STAMINA:" + myStamina + "\n"); 
+     System.out.println("HEALTH: " + currentHealth + " : " + "STAMINA:" + currentStamina); 
      printInventory(); 
-     currentRoom.getStoryDescription();
     }
 
     /**
@@ -643,13 +659,15 @@ public class Game
      */
     private void printInventory()
     {
-        System.out.print("\nINVENTORY:\n");
-        System.out.print("\nName:  Weight:  Amount:\n");
-        if (myInventory!=null)
-        for (Item myItem : myInventory)
-        System.out.println(myItem.getName() + " / " + f.format(myItem.getTotalWeight()) + " / " + myItem.getItemAmount());
-        else System.out.print("There are no items in your inventory!\n");
-        System.out.print("Current weight: " + getCurrentWeight() + "\n----------------------------------------\n");
+        System.out.println("\n----->INVENTORY<-----");
+        if (!myInventory.isEmpty())
+        {
+            System.out.println("Name:  Weight:  Amount:");
+            for (Item myItem : myInventory)
+                System.out.println(myItem.getName() + " / " + f.format(myItem.getTotalWeight()) + " / " + myItem.getItemAmount());
+            }
+        else System.out.println("There are no items in your inventory!");
+        System.out.println("Current weight: " + getCurrentWeight());
     }
     
     /**
