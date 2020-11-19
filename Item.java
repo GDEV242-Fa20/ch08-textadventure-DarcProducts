@@ -1,4 +1,3 @@
-
 /**
  * an item with description and weight
  *
@@ -8,17 +7,19 @@
 public class Item
 {
     private String nameOfItem;
-    private float weight;
+    private float singleWeight;
+    private float totalWeight;
     private int amount;
     /**
      * @constructor
      * @param
      */
-    public Item(String itemName, float mass, int amount)
+    public Item(String itemName, float itemWeight, int amount)
     {
         this.amount = amount;
         nameOfItem = itemName;
-        weight = mass;
+        totalWeight = itemWeight * amount;
+        singleWeight = itemWeight;
     }
     
     /**
@@ -32,13 +33,39 @@ public class Item
     }
     
     /**
+     * updates weight
+     */
+    public void setWeight()
+    {
+        totalWeight = singleWeight * amount;
+        singleWeight = totalWeight / amount;
+    }
+    
+    /**
      * gets items weight
-     * @method
      * @return
      */
-    public float getItemWeight()
+    public float getTotalWeight()
     {
-        return weight;
+        return totalWeight;
+    }
+    
+    /**
+     * gets single items weight
+     * @return
+     */
+    public float getSingleWeight()
+    {
+        return singleWeight;
+    }
+    
+    /**
+     * gets items amount
+     * @return
+     */
+    public void setItemAmount(int amount)
+    {
+        this.amount = amount;
     }
     
     /**

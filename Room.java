@@ -25,14 +25,16 @@ public class Room
     private String storyDescription;
     private ArrayList<Creature> roomCreatures;
     private Random rand = new Random();
+    private String roomName;
     /**
      * Create a room described "description". Initially, it has
      * no exits. "description" is something like "acid bog" or
      * "crashed pod".
      * @param description The room's description.
      */
-    public Room(String description) 
+    public Room(String description, String roomName) 
     {
+        this.roomName = roomName;
         this.description = description;
         exits = new HashMap<>();
         roomCreatures = new ArrayList();
@@ -50,17 +52,14 @@ public class Room
     }
     
     /**
-     * try spawn creature
+     * try spawn a worm creature
      * @method
      * @return
      */
     public void trySpawnWorm()
     {
-        int chanceToSpawn = rand.nextInt(101);
-        if (chanceToSpawn<60)
-        {
-            roomCreatures.add(new Creature("strange worm",1,1));
-        }
+        if (rand.nextInt(101)<60)
+        roomCreatures.add(new Creature("strange worm",1,1));
     }
 
     /**
@@ -112,7 +111,7 @@ public class Room
     {
         if (roomItems!=null)
         {
-            System.out.print("\n----------------------------------------\n:::ITEMS / WEIGHT:::\n");
+            System.out.print("\n----------------------------------------\n:::ROOM ITEMS / WEIGHT:::\n");
             printItemsInRoom();
         }
         String myDescription = "----------------------------------------\n:::Your CURRENT LOCATION is:::\n"
@@ -159,7 +158,6 @@ public class Room
     
     /**
      * adds item to room
-     * @method
      * @param
      */
     public void addItem(Item thisItem)
@@ -169,7 +167,6 @@ public class Room
     
     /**
      * removes item from room
-     * @method
      * @param
      */
     public void removeItem(String item)
@@ -183,7 +180,6 @@ public class Room
     
     /**
      * prints items in room if any
-     * @method
      */
     public void printItemsInRoom()
     {
@@ -191,19 +187,27 @@ public class Room
         {
             for (Item thisItem : roomItems.keySet())
             {
-                System.out.println(thisItem.getItemInfo() + " / " + thisItem.getItemWeight());
+                System.out.println(thisItem.getItemInfo() + " / " + thisItem.getTotalWeight());
             }
         } else System.out.println("No items in room!");
     }
     
     /**
      * adds a description to room based on story
-     * @method
      * @param
      */
     public void addStoryDescription(String story)
     {
         storyDescription = story;
+    }
+    
+    /**
+     * gets room name
+     * @return
+     */
+    public String getName()
+    {
+        return roomName;
     }
     
     /**
