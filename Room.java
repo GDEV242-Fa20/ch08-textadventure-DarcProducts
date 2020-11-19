@@ -21,7 +21,7 @@ public class Room
 {
     private String description;
     private HashMap<String, Room> exits;        // stores exits of this room.
-    private HashMap<Item, String> roomItems;
+    private ArrayList<Item> roomItems;
     private String storyDescription;
     private ArrayList<Creature> roomCreatures;
     private Random rand = new Random();
@@ -38,7 +38,7 @@ public class Room
         this.description = description;
         exits = new HashMap<>();
         roomCreatures = new ArrayList();
-        roomItems = new HashMap<Item, String>();
+        roomItems = new ArrayList();
     }
     
     /**
@@ -83,7 +83,7 @@ public class Room
         ArrayList<Item> thisInventory = myInventory;
         for (Item artifact : thisInventory)
         {
-            if (artifact.getItemInfo().equals("artifact"))
+            if (artifact.getName().equals("artifact"))
             {
                 System.out.print("\n\n\n\n\nYOU WIN!!!!!\n\n\n\n\n");
                 isFinished = true;
@@ -151,7 +151,7 @@ public class Room
      * @param
      * @return
      */
-    public HashMap getRoomItemsHashMap()
+    public ArrayList getRoomItems()
     {
         return roomItems;
     }
@@ -162,19 +162,19 @@ public class Room
      */
     public void addItem(Item thisItem)
     {
-        roomItems.put(thisItem, thisItem.getItemInfo());
+        roomItems.add(thisItem);
     }
     
     /**
      * removes item from room
      * @param
      */
-    public void removeItem(String item)
+    public void removeItem(Item item)
     {
         if (roomItems!=null)
         {
-            roomItems.values().remove(item);
-            System.out.println("Removed " + item + " from " + description);
+            roomItems.remove(item);
+            System.out.println("Removed " + item.getName() + " from " + description);
         }
     }
     
@@ -185,9 +185,9 @@ public class Room
     {
         if (roomItems!=null)
         {
-            for (Item thisItem : roomItems.keySet())
+            for (Item thisItem : roomItems)
             {
-                System.out.println(thisItem.getItemInfo() + " / " + thisItem.getTotalWeight());
+                System.out.println(thisItem.getName() + " / " + thisItem.getTotalWeight());
             }
         } else System.out.println("No items in room!");
     }

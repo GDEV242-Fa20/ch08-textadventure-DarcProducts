@@ -294,7 +294,8 @@ public class Game
         
         if (currentRoom.getName().equals("largeRoomCave"))
         {
-            System.out.println("The entrance to the cave collapses!");
+            if (!isInCaves)
+                System.out.println("The entrance to the cave collapses!");
             isInCaves = true;
         }
     }
@@ -359,7 +360,7 @@ public class Game
     private Item getItemByName(String name)
     {
         for (Item eachItem : myInventory)
-            if (eachItem.getItemInfo().equals(name))
+            if (eachItem.getName().equals(name))
                 return eachItem;
         return null;
     }
@@ -369,9 +370,9 @@ public class Game
         Item myGun = null; Item myAmmo = null;
             for (Item myItem : myInventory)
             {
-                if (myItem.getItemInfo().equals("gun"))
+                if (myItem.getName().equals("gun"))
                 myGun = myItem;
-                if (myItem.getItemInfo().equals("ammo"))
+                if (myItem.getName().equals("ammo"))
                 myAmmo = myItem;
             }
             if (myGun!=null && myAmmo!=null)
@@ -421,25 +422,25 @@ public class Game
         {
             if (tryUseThisItem!=null)
             {
-                if (tryUseThisItem.getItemInfo().equals("firstAid"))
+                if (tryUseThisItem.getName().equals("firstAid"))
                 {
                     addHealth(10);
                     currentWeight -= tryUseThisItem.getSingleWeight();
                     myInventory.remove(tryUseThisItem);
                     return;
                 }
-                else if (tryUseThisItem.getItemInfo().equals("gun"))
+                else if (tryUseThisItem.getName().equals("gun"))
                 {
                     tryShootGun();
                 }
-                else if (tryUseThisItem.getItemInfo().equals("sedative"))
+                else if (tryUseThisItem.getName().equals("sedative"))
                 {
                     if (!currentRoom.getListCreatures().isEmpty())
                     {
                         
                     }
                 }
-                else if (tryUseThisItem.getItemInfo().equals("knife"))
+                else if (tryUseThisItem.getName().equals("knife"))
                 {
                     if (!currentRoom.getListCreatures().isEmpty())
                     {
@@ -452,7 +453,7 @@ public class Game
                         }
                     }
                 }
-                else if (tryUseThisItem.getItemInfo().equals("flashlight"))
+                else if (tryUseThisItem.getName().equals("flashlight"))
                 {
                     if (isInCaves)
                     {
@@ -463,12 +464,13 @@ public class Game
                         flashLightUses--;
                         //create reason to use flashlight
                         if (rand.nextInt(101)<51)
-                            currentRoom.addItem(new Item("old ammo", 0.2f, 4));
+                            currentRoom.addItem(new Item("ammo", 0.2f, 4));
                         }
                         else 
                         {
                             System.out.println("The flashlight flickers and dies. You toss it as it will no longer be of use.");
                             myInventory.remove(tryUseThisItem);
+                            currentWeight-=tryUseThisItem.getTotalWeight();
                         }
                     }
                     else
@@ -488,25 +490,21 @@ public class Game
     private void drop(Command command)
     {
         ArrayList<Item> theseObjects = myInventory;
+        String objectToDrop = command.getSecondWord();
+        Item thisItem = null;
         if (!theseObjects.isEmpty())
-        {
             for (Item object : theseObjects)
-            {
-                if (object.getItemInfo().equals(command.getSecondWord()))
-                {
-                    currentRoom.addItem(object);
-                    myInventory.remove(object);
-                    currentWeight -= object.getTotalWeight();
-                    System.out.println("Dropped " + object.getItemInfo() + "\nRemoved " + object.getItemInfo() + " from inventory!");
-                    return;
-                } 
-                else
-                {
-                    System.out.println("drop what?");
-                    return;
-                }
-            }
+                if (object.getName().equals(objectToDrop))
+                    thisItem = object;
+        if (thisItem!=null)
+        {
+            currentRoom.addItem(thisItem);
+            myInventory.remove(thisItem);
+            currentWeight -= thisItem.getTotalWeight();
+            System.out.println("Dropped " + thisItem.getName() + "\nRemoved " + thisItem.getName() + " from inventory!");
         }
+        else
+            System.out.println("Drop what?");
     }
 
     /**
@@ -515,19 +513,23 @@ public class Game
      */
     private void tryGrab(Command command)
     {
-        Collection<String> theseObjects = currentRoom.getRoomItemsHashMap().values();
-        if (theseObjects!=null)
+        ArrayList<Item> theseObjects = currentRoom.getRoomItems();
+        String itemName = command.getSecondWord();
+        Item grabbedItem = null;
+        if (!theseObjects.isEmpty())
         {
-            for (String object : theseObjects)
+            for (Item object : theseObjects)
             {
-                if (object.equals(command.getSecondWord()) && currentRoom.getRoomItemsHashMap().containsValue(object))
+                if (object.getName().equals(itemName))
                 {
-                    tryAddInventoryItem(object);
-                    return;
+                    grabbedItem = object;
                 }
             }
-            System.out.println("try grabbing what?");
         }
+        if (grabbedItem!=null)
+            tryAddInventoryItem(grabbedItem);
+        else
+            System.out.println("Grab what?");
     }
     
     /**
@@ -585,30 +587,25 @@ public class Game
      * @method
      * @param
      */
-    private void tryAddInventoryItem(String item)
+    private void tryAddInventoryItem(Item item)
     {
         Item myItem = null;
-        Set<Item> itemsInRoom = currentRoom.getRoomItemsHashMap().keySet();
+        ArrayList<Item> itemsInRoom = currentRoom.getRoomItems();
         for (Item thisItem : itemsInRoom)
-        {
-            if (thisItem.getItemInfo().equals(item))
-            {
+            if (thisItem.getName().equals(item.getName()))
                 myItem = thisItem;
-                if (myItem!=null)
-                {
-                    float totalWeight = myItem.getTotalWeight() + currentWeight;
-                    if (totalWeight < MAXCARRYWEIGHT)
-                    {
-                        System.out.println("Grabbed " + myItem.getItemInfo() + "\n");
-                        System.out.println("\nAdded " + myItem.getItemInfo() + " to inventory!");
-                        myInventory.add(myItem);
-                        currentWeight += myItem.getTotalWeight();
-                        currentRoom.removeItem(myItem.getItemInfo());
-                        return;
-                    }
-                } else System.out.println("cannot pick up " + item);
+        if (myItem!=null)
+        {
+            float totalWeight = myItem.getTotalWeight() + currentWeight;
+            if (totalWeight < MAXCARRYWEIGHT)
+            {
+                 System.out.println("Grabbed " + myItem.getName() + "\n");
+                 System.out.println("\nAdded " + myItem.getName() + " to inventory!");
+                 myInventory.add(myItem);
+                 currentWeight += myItem.getTotalWeight();
+                 currentRoom.removeItem(myItem);
             }
-        }
+        } else System.out.println("Cannot find " + item.getName() + ".");
     }
   
     /**
@@ -650,7 +647,7 @@ public class Game
         System.out.print("\nName:  Weight:  Amount:\n");
         if (myInventory!=null)
         for (Item myItem : myInventory)
-        System.out.println(myItem.getItemInfo() + " / " + f.format(myItem.getTotalWeight()) + " / " + myItem.getItemAmount());
+        System.out.println(myItem.getName() + " / " + f.format(myItem.getTotalWeight()) + " / " + myItem.getItemAmount());
         else System.out.print("There are no items in your inventory!\n");
         System.out.print("Current weight: " + getCurrentWeight() + "\n----------------------------------------\n");
     }

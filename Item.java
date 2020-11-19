@@ -27,7 +27,7 @@ public class Item
      * @method
      * @return
      */
-    public String getItemInfo()
+    public String getName()
     {
         return nameOfItem;
     }
