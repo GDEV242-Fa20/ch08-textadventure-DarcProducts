@@ -605,20 +605,22 @@ public class Game
                 if (inventoryItem.getName().equals(myItem.getName()))
                     checkInventory = inventoryItem;
             
-            if (totalWeight < MAXCARRYWEIGHT && checkInventory!=null)
+            if (totalWeight+ currentWeight < MAXCARRYWEIGHT && checkInventory!=null)
             {
                 currentWeight += myItem.getTotalWeight();                
                 checkInventory.setItemAmount(checkInventory.getItemAmount() + myItem.getItemAmount());
                 checkInventory.setWeight();
                 currentRoom.removeItem(checkInventory);
             }
-            else if (totalWeight < MAXCARRYWEIGHT && checkInventory==null)
+            else if (totalWeight + currentWeight < MAXCARRYWEIGHT && checkInventory==null)
             {
                 myInventory.add(myItem);
                 currentWeight += myItem.getTotalWeight();
                 currentRoom.removeItem(myItem);
                 System.out.println("Added " + myItem.getName() + " to inventory!");
             }
+            else if (totalWeight + currentWeight > MAXCARRYWEIGHT)
+                System.out.println("Cannot carry any more weight!");
         } else System.out.println("Cannot find " + item.getName() + ".");
     }
   

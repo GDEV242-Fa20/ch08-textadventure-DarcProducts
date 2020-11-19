@@ -80,8 +80,7 @@ public class Room
     public Boolean checkWin(ArrayList myInventory)
     {
         Boolean isFinished = false;
-        ArrayList<Item> thisInventory = myInventory;
-        for (Item artifact : thisInventory)
+        for (Item artifact : (ArrayList<Item>)myInventory)
         {
             if (artifact.getName().equals("artifact"))
             {
